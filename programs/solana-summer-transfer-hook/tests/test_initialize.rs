@@ -31,8 +31,11 @@ fn test_initialize() {
     let instruction = Instruction::new_with_bytes(
         program_id,
         &solana_summer_transfer_hook::instruction::Initialize {}.data(),
+        // CHALLENGE 1 (solved): pass the mint in so the handler can check
+        // it's owned by the Token-2022 program and store it on RateLimit.
         solana_summer_transfer_hook::accounts::Initialize {
             payer: payer.pubkey(),
+            mint: mint.pubkey(),
             rate_limit,
             system_program: SYSTEM_PROGRAM_ID,
         }.to_account_metas(None),

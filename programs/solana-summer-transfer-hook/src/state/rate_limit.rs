@@ -4,6 +4,11 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct RateLimit {
     pub authority: Pubkey,          // The account that can update the rate limit
+    // CHALLENGE 2 (solved): track which mint this rate limit belongs to.
+    // #[derive(InitSpace)] above recalculates the account's on-chain size
+    // automatically now that this field exists, so `initialize.rs` doesn't
+    // need to change its `space = ...` calculation.
+    pub mint: Pubkey,               // The mint this rate limit applies to
     pub max_amount: u64,            // The maximum amount that can be transferred within one window
     pub window_start: i64,          // The timestamp at which the current window opened
     pub amount_transferred: u64,    // The total amount transferred within the current window

@@ -62,8 +62,12 @@ pub fn initialize_rate_limit(svm: &mut LiteSVM, payer: &Keypair, mint: &Keypair,
     let ix = Instruction::new_with_bytes(
         *program_id,
         &solana_summer_transfer_hook::instruction::Initialize {}.data(),
+        // CHALLENGE 1 (solved): `Initialize` now also expects the mint
+        // account, since the handler validates it and stores it on
+        // `RateLimit`.
         solana_summer_transfer_hook::accounts::Initialize {
             payer: payer.pubkey(),
+            mint: mint.pubkey(),
             rate_limit,
             system_program: SYSTEM_PROGRAM_ID,
         }.to_account_metas(None),

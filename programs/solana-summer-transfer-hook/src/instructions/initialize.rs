@@ -1,12 +1,19 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{token_2022, token_interface::Mint};
 
-use crate::{ANCHOR_DISCRIMINATOR_SIZE, RateLimit, error::ErrorCode};
+use crate::{ANCHOR_DISCRIMINATOR_SIZE, RateLimit};
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+    // CHALLENGE 1 (solved): the mint the rate limit is being created for.
+    // The `owner = token_2022::ID` constraint makes Anchor check that this
+    // account is actually owned by the Token-2022 program - if someone
+    // passes in a random account (or a legacy SPL Token mint), the
+    // instruction fails right here, before our handler code runs.
+    #[account(owner = token_2022::ID)]
+    pub mint: InterfaceAccount<'info, Mint>,
     #[account(
         init,
         payer = payer,
@@ -21,12 +28,12 @@ pub struct Initialize<'info> {
 }
 
 pub fn handler(ctx: Context<Initialize>) -> Result<()> {
-    // For the challenge - Ensure the mint is a token-2022 mint by checking its owner (Pass the mint in the context and check its owner. 
-    // Consider saving the mint in the RateLimit struct if needed for future use.
-
     // Initialize the rate limit account with the authority, mint, max amount, and window start timestamp
     ctx.accounts.rate_limit.set_inner(RateLimit {
         authority: ctx.accounts.payer.key(),
+        // CHALLENGE 2 (solved): remember which mint this rate limit belongs
+        // to, now that `RateLimit` has a `mint` field.
+        mint: ctx.accounts.mint.key(),
         max_amount: RateLimit::MAX_AMOUNT,
         window_start: Clock::get()?.unix_timestamp,
         amount_transferred: 0
