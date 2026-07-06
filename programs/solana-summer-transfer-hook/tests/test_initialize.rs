@@ -23,8 +23,10 @@ fn test_initialize() {
     initialize_mint(&mut svm, &payer, &mint, &program_id);
 
     // Then initialize the rate limit account
+    // CHALLENGE 3 (solved): PDA is per-mint, per-owner (owner = payer here),
+    // must match the seeds in `initialize.rs`.
     let rate_limit = Pubkey::find_program_address(
-        &[b"rate_limit"],
+        &[b"rate_limit", mint.pubkey().as_ref(), payer.pubkey().as_ref()],
         &program_id,
     ).0;
 

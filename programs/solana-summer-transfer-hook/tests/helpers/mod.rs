@@ -54,8 +54,9 @@ pub fn initialize_mint(svm: &mut LiteSVM, payer: &Keypair, mint: &Keypair, progr
 
 // For the challenge - Initialize the rate limit account and the extra account meta list for a given mint
 pub fn initialize_rate_limit(svm: &mut LiteSVM, payer: &Keypair, mint: &Keypair, program_id: &Address) {
+    // CHALLENGE 3 (solved): PDA is now per-mint, per-owner (owner = payer here).
     let rate_limit = Pubkey::find_program_address(
-        &[b"rate_limit"],
+        &[b"rate_limit", mint.pubkey().as_ref(), payer.pubkey().as_ref()],
         program_id,
     ).0;
 
@@ -149,8 +150,11 @@ pub fn build_transfer_with_hook_ix(
         program_id,
     ).0;
 
+    // CHALLENGE 3 (solved): must match the seeds in `transfer_hook.rs`
+    // (literal, mint, owner) so the client resolves the same PDA the
+    // on-chain program expects.
     let rate_limit = Pubkey::find_program_address(
-        &[b"rate_limit"],
+        &[b"rate_limit", mint.as_ref(), owner.as_ref()],
         program_id,
     ).0;
 

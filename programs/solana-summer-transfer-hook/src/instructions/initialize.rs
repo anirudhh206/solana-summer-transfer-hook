@@ -17,9 +17,11 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer = payer,
-        // Unique, program-wide rate limit account. See the CHALLENGE note in
-        // `init_extra_account_meta.rs` for making this per-mint/per-owner.
-        seeds = [b"rate_limit"],
+        // CHALLENGE 3 (solved): one rate limit per mint, per owner. The
+        // owner here is the payer creating the rate limit - this must match
+        // the seeds used in `transfer_hook.rs`, `init_extra_account_meta.rs`,
+        // and the test helpers.
+        seeds = [b"rate_limit", mint.key().as_ref(), payer.key().as_ref()],
         bump,
         space = ANCHOR_DISCRIMINATOR_SIZE + RateLimit::INIT_SPACE,
     )]

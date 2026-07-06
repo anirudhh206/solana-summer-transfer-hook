@@ -30,6 +30,13 @@ pub mod solana_summer_transfer_hook {
         init_extra_account_meta::handler(ctx)
     }
 
+    // CHALLENGE 4 (solved): entrypoint that performs the transfer_checked CPI
+    // itself (see instructions/transfer.rs), instead of requiring the client
+    // to build that CPI directly against the Token-2022 program.
+    pub fn transfer(ctx: Context<Transfer>, amount: u64, decimals: u8) -> Result<()> {
+        transfer::handler(ctx, amount, decimals)
+    }
+
     #[instruction(discriminator = ExecuteInstruction::SPL_DISCRIMINATOR_SLICE)]
     pub fn transfer_hook(ctx: Context<TransferHook>, amount: u64) -> Result<()> {
         transfer_hook::handler(ctx, amount)

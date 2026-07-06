@@ -26,19 +26,25 @@ pub struct InitializeExtraAccountMetaList<'info> {
 
 pub fn extra_account_metas() -> Result<Vec<ExtraAccountMeta>> {
     Ok(vec![
-        // A single, program-wide rate limit account derived only from the
-        // "rate_limit" literal seed. Every transfer of every mint by every
-        // owner resolves to this one account.
+        // CHALLENGE 3 (solved): the rate limit PDA is now derived per-mint,
+        // per-owner instead of a single program-wide account.
         //
-        // CHALLENGE: make the rate limit account deterministic *per mint and
-        // per owner* by adding the mint and owner as extra seeds.
+        // These `Seed::AccountKey` entries don't name accounts - they point
+        // at an *index* into the full account list of the `Execute`
+        // instruction that Token-2022 builds for the transfer hook:
+        //   0 = source_token, 1 = mint, 2 = destination_token, 3 = owner,
+        //   4 = extra_account_meta_list (validation account), 5+ = extras.
+        // So index 1 is the mint and index 3 is the owner - see
+        // `spl_transfer_hook_interface::instruction` for this fixed layout.
         //
-        // The seeds here must match the PDA seeds used to create the account
-        // in `initialize.rs` and to load it in `transfer_hook.rs` (and the
-        // test helpers), so all of them have to be updated together.
+        // These seeds must exactly match the seeds used to create the
+        // account in `initialize.rs`, to load it in `transfer_hook.rs`, and
+        // in the test helpers - all four have to stay in sync.
         ExtraAccountMeta::new_with_seeds(
             &[
                 Seed::Literal { bytes: b"rate_limit".to_vec() },
+                Seed::AccountKey { index: 1 }, // mint
+                Seed::AccountKey { index: 3 }, // owner
             ],
             false,                                  // is signer
             true,                                   // is writable
